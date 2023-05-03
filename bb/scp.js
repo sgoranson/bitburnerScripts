@@ -1,3 +1,4 @@
+/* eslint-disable require-jsdoc */
 'use strict';
 
 import * as ll from '/bb/lib.js';
@@ -32,12 +33,13 @@ export async function main(ns) {
 
 /** @param {import(".").NS} ns  **/
 function readLines(ns, filename) {
-    fullStr = ns.read(filename);
+    let fullStr = ns.read(filename);
     let strz = fullStr.split('\n');
     ll.INFO(ns, `fullStr: ${fullStr} strz: ${strz}`);
 
     return strz;
 }
-export function autocomplete(data, args) {
+// eslint-disable-next-line no-unused-vars
+export function autocomplete(data, _) {
     return [...data.scripts, 'xx'];
 }
