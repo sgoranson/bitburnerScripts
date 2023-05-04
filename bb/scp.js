@@ -14,19 +14,22 @@ export async function main(ns) {
         return;
     }
 
-    ns.tail();
+    ns.tail(); //yes
 
-    const dest = readLines(ns, SERVERFN);
-    const files = flags._.length ? flags._ : ns.ls(ns.getHostname(), '/bb');
+    const destServers = readLines(ns, SERVERFN);
+    //const destServers = ['earl2', 'omega-net'];
+    const files2copy = flags._.length ? flags._ : ns.ls(ns.getHostname(), '/bb');
 
-    ll.INFO(ns, `INFO: copying: ${files}`);
-    ll.INFO(ns, `to: ${dest}`);
+    ll.INFO(ns, `INFO: copying: ${files2copy}`);
+    ll.INFO(ns, `to: ${destServers.join(':')}`);
 
-    for (let s of dest) {
-        if (ns.scp(flags._, s, 'home')) {
-            ns.tprint(`SUCCESS: OK: ${s}`);
+    for (let server of destServers) {
+        ll.INFO(ns, `scp to (${server})`);
+        ll.INFO(ns, `dest: (${server}) sz: ${server.length}`);
+        if (ns.scp(files2copy, server, 'home')) {
+            ns.tprint(`SUCCESS: OK: ${server}`);
         } else {
-            ll.INFO(ns, `ERROR: FAIL: ${s}`);
+            ll.INFO(ns, `ERROR: FAIL: ${server}`);
         }
     }
 }
@@ -34,7 +37,10 @@ export async function main(ns) {
 /** @param {import(".").NS} ns  **/
 function readLines(ns, filename) {
     let fullStr = ns.read(filename);
-    let strz = fullStr.split('\n');
+    let strz = fullStr
+        .split('\n')
+        .map((x) => x.trim())
+        .filter((x) => x.length > 0);
     ll.INFO(ns, `fullStr: ${fullStr} strz: ${strz}`);
 
     return strz;

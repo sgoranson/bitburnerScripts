@@ -13,5 +13,6 @@ module.exports = {
     rules: {
         indent: ['error', 4],
         quotes: ['error', 'single'],
+        'no-constant-condition': ['error', { checkLoops: false }],
     },
 };

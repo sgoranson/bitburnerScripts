@@ -15,25 +15,34 @@ export async function main(ns) {
 
     ns.tail();
 
-    let targetSrv = flags._[0];
+    const targetSrv = flags._[0];
     let cashAvail = ns.getServerMoneyAvailable(targetSrv);
-    let cashMax = ns.getServerMaxMoney(targetSrv);
+    const cashMax = ns.getServerMaxMoney(targetSrv) * CASH_FRACTION;
     let secLvl = ns.getServerSecurityLevel(targetSrv);
-    let secMinLvl = ns.getServerMinSecurityLevel(targetSrv);
-    let logPrefix = `${ns.getHostname()} -> ${targetSrv}:`;
+    const secMinLvl = ns.getServerMinSecurityLevel(targetSrv) + SEC_OFFSET;
+    const logPrefix = `${ns.getHostname()} -> ${targetSrv}:`;
+     
     let earnedCash = 0;
 
     while (true) {
-        if (secLvl > secMinLvl + SEC_OFFSET) {
-            ns.print(`${logPrefix} secLvl: ${FNUM(secLvl)}`);
+        INFO( `secLvl: ${secLvl} secMinLvl: ${secMinLvl} cashAvail: ${cashAvail} cashMax: ${cashMax} earnedCash: ${earnedCash}`);
+
+        if (secLvl > secMinLvl) {
+            INFO(`weak: secLvl: ${FNUM(secLvl)}`);
             secLvl -= await ns.weaken(targetSrv);
-        } else if (cashAvail < cashMax * CASH_FRACTION) {
-            ns.print(`${logPrefix}: grow: cashMax: ${FNUM(cashMax * CASH_FRACTION)} cashAvail: ${FNUM(cashAvail)}`);
+
+        } else if (cashAvail < cashMax) {
+            INFO(`grow: cashAvail: ${FNUM(cashAvail)}`);
             cashAvail *= await ns.grow(targetSrv);
+
         } else {
             earnedCash += await ns.hack(targetSrv);
-            ns.print(`${logPrefix}: earnedCash: ${FNUM(earnedCash)}`);
+            INFO(`earnedCash: ${FNUM(earnedCash)}`);
         }
+    }
+
+    function INFO(str) {
+        ns.print(`${logPrefix} ${str}`);
     }
 
     function FNUM(str) {

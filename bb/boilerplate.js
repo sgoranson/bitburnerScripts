@@ -9,9 +9,10 @@ export async function main(ns) {
 
     ns.tail();
 
-    const srv = flags._[0];
+    //const srv = flags._[0];
 }
 
-export function autocomplete(data, args) {
+// eslint-disable-next-line no-unused-vars
+export function autocomplete(data, _args) {
     return [...data.servers];
 }
