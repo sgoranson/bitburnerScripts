@@ -1,12 +1,24 @@
 /** @param {import(".").NS} ns  **/
 
-export function INFO(nsx = ns, strx) {
-    nsx.tprint(`INFO: ${strx}`);
+export function INFO(ns, strx) {
+    ns.tprint(`INFO: ${strx}`);
 }
-// rgba(212, 128, 8, 1)
-// rgba(250, 240, 170, 0.5)
+export function FNUM(ns, str) {
+    return ns.formatNumber(str, 4, 1000, true);
+}
 
-// export function readLines(ns, fn) {
-//     ns.tprint(`INFO: ${strx}`);
+const cyan = '\u001b[36m';
+// const green = "\u001b[32m";
+// const red = "\u001b[31m";
+const reset = '\u001b[0m';
 
-// }
+export function DBG1(ns, str, termOnly = false) {
+    ns.tprint(`${cyan}DBG: [${(new Date()).toLocaleTimeString()}] ${str}${reset}`);
+    if(!termOnly) {
+        ns.print(`${cyan}DBG: [${(new Date()).toLocaleTimeString()}] ${str}${reset}`);
+    }
+
+}
+
+
+//export function DBG(...args) {console.log(`DBG: [${(new Date()).toLocaleString()}] args: ${args.map(yy => [ Object.keys(yy)[0], Object.values(yy)[0] ] )

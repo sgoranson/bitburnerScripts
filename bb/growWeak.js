@@ -1,12 +1,13 @@
+import {FNUM, DBG1} from '/bb/lib.js';
+
+const schema = [['help', false], ['server', 'xyz'] ];
+
 /** @param {import(".").NS} ns  **/
 
 export async function main(ns) {
-    const flags = ns.flags([
-        ['infoOnly', false],
-        ['help', false],
-    ]);
-    if (flags._.length === 0 || flags.help) {
-        ns.tprint(`usage: ${ns.getScriptName()} SERVERNAME [--help] [--infoOnly]`);
+    const flags = ns.flags(schema);
+    if (flags.help) {
+        ns.tprint(`usage: ${ns.getScriptName()} --server SERVERNAME [--help] `);
         return;
     }
 
@@ -15,7 +16,7 @@ export async function main(ns) {
 
     ns.tail();
 
-    const targetSrv = flags._[0];
+    const targetSrv = flags.server;
     let cashAvail = ns.getServerMoneyAvailable(targetSrv);
     const cashMax = ns.getServerMaxMoney(targetSrv) * CASH_FRACTION;
     let secLvl = ns.getServerSecurityLevel(targetSrv);
@@ -25,27 +26,28 @@ export async function main(ns) {
     let earnedCash = 0;
 
     while (true) {
-        INFO( `secLvl: ${secLvl} secMinLvl: ${secMinLvl} cashAvail: ${cashAvail} cashMax: ${cashMax} earnedCash: ${earnedCash}`);
+        DBG1(ns, `${logPrefix} secLvl: ${FNUM(ns, secLvl)} secMinLvl: ${secMinLvl} cashAvail: ${FNUM(ns, cashAvail)}` + 
+              ` cashMax: ${FNUM(ns, cashMax)} earnedCash: ${FNUM(ns,  earnedCash )}`);
 
         if (secLvl > secMinLvl) {
-            INFO(`weak: secLvl: ${FNUM(secLvl)}`);
+            DBG1(ns, `${logPrefix} weak: secLvl: ${FNUM(ns, secLvl)}`);
             secLvl -= await ns.weaken(targetSrv);
 
         } else if (cashAvail < cashMax) {
-            INFO(`grow: cashAvail: ${FNUM(cashAvail)}`);
+            DBG1(ns, `${logPrefix} grow: cashAvail: ${FNUM(ns, cashAvail)}`);
             cashAvail *= await ns.grow(targetSrv);
 
         } else {
-            earnedCash += await ns.hack(targetSrv);
-            INFO(`earnedCash: ${FNUM(earnedCash)}`);
+            let gotCash = await ns.hack(targetSrv);
+            earnedCash += gotCash;
+            DBG1(ns, `${logPrefix} gotCash: ${FNUM(ns, gotCash)} earnedCash: ${FNUM(ns, earnedCash)}`);
         }
     }
 
-    function INFO(str) {
-        ns.print(`${logPrefix} ${str}`);
-    }
 
-    function FNUM(str) {
-        return ns.formatNumber(str, 4, 1000, true);
-    }
+}
+// eslint-disable-next-line no-unused-vars
+export function autocomplete(data, _args) {
+    data.flags(schema);
+    return [...data.servers];
 }

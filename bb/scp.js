@@ -14,7 +14,6 @@ export async function main(ns) {
         return;
     }
 
-    ns.tail(); //yes
 
     const destServers = readLines(ns, SERVERFN);
     //const destServers = ['earl2', 'omega-net'];
