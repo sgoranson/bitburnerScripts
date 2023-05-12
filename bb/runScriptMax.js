@@ -1,45 +1,82 @@
-import { FNUM, DBG1 } from '/bb/lib.js';
+import { FNUM, DBG1, logConfig } from '/bb/lib.js';
 
-const server = 'home';
-const scriptName = '/bb/growWeak.js';
+logConfig.debugFlag = false;
+
 const schema = [
-    ['help', false],
-    ['server', server],
-    ['scriptName', scriptName],
+    ['help', false], //
+    ['srcServer', ''],
+    ['scriptName', ''],
+    ['threadCount'],
 ];
 
 /** @param {import(".").NS} ns  **/
 
 export async function main(ns) {
     const opts = ns.flags(schema);
+    console.log('opts :>> ', opts);
 
-    if (opts.help) {
-        ns.tprint(`usage: ${ns.getScriptName()} [--server SERVERNAME] [--scriptName scriptName] [...args] [--help]`);
+    if (opts.help || ns.args.length < 6) {
+        ns.tprint(
+            `usage: ${ns.getScriptName()} \\'--literal argString\\' [--srcServer SRCSERVER] [--scriptName SCRIPTNAME] [--threadCount x]  [--help] `
+        );
         return;
     }
-    ns.tail();
-    let availRam = ns.getServerMaxRam(opts.server) - ns.getServerUsedRam(opts.server);
-    ns.tprint(`availRam: ${availRam}`);
-    let scriptRam = ns.getScriptRam(opts.scriptName, opts.server);
-    ns.tprint(`scriptRam: ${scriptRam}`);
+
+    const availRam = ns.getServerMaxRam(opts.srcServer) - ns.getServerUsedRam(opts.srcServer);
+    DBG1(ns, `availRam: ${availRam}`);
+    const scriptRam = ns.getScriptRam(opts.scriptName, opts.srcServer);
+    DBG1(ns, `scriptRam: ${scriptRam}`);
     if (scriptRam === 0) {
-        ns.tprint(`ERROR: getScriptRam failed code 0, ${opts.scriptName} not found on ${opts.server}`);
+        ns.tprint(`ERROR: getScriptRam failed code 0, ${opts.scriptName} not found on ${opts.srcServer}`);
+
         return;
     }
-    let maxThreads = Math.floor(availRam / scriptRam);
 
-    DBG1(ns, `host: ${opts.server} scriptName: ${opts.scriptName}`);
+    const maxThreads = Math.floor(availRam / scriptRam);
+    if (maxThreads === 0) {
+        throw new Error('no RAM! exiting.');
+    }
+    const threadCount = opts.threadCount ?? maxThreads;
+
+    DBG1(ns, `host: ${opts.srcServer} scriptName: ${opts.scriptName}`);
     DBG1(
         ns,
-        `availRam: ${FNUM(ns, availRam)} scriptRam: ${FNUM(ns, scriptRam)}` +
-            ` maxThreads: ${maxThreads} extra: ${opts._}`
+        `availRam: ${FNUM(ns, availRam)} scriptRam: ${FNUM(ns, scriptRam)} threadCount: ${threadCount} extra: ${opts._}`
     );
-    //ns.run(opts.scriptName, maxThreads, opts.server)
-    ns.exec(opts.scriptName, opts.server, maxThreads, ...opts._);
+
+    //ns.run(opts.scriptName, maxThreads, opts.srcServer)
+    console.log('opts._ :>> ', opts._);
+    // eslint-disable-next-line quotes
+    const noquoteArgs = opts._.map((str) => str.replaceAll("'", ''));
+    console.log('noquoteArgs :>> ', noquoteArgs);
+
+    ns.exec(opts.scriptName, opts.srcServer, threadCount, ...noquoteArgs);
     //const srv = flags._[0];
+    ns.tprint(ns.getScriptLogs());
 }
 
-// eslint-disable-next-line no-unused-vars
-export function autocomplete(data, _args) {
-    return [...data.servers, ...data.flags(schema)];
+export function autocomplete(data, args) {
+    console.debug(args);
+    data.flags(schema);
+
+    if (args.length >= 2) {
+        const [prelastArg, lastArg] = args.slice(-2);
+        console.debug({ prelastArg, lastArg });
+
+        if (['--srcServer', '--targServer'].includes(prelastArg)) {
+            if (!data.servers.includes(lastArg)) {
+                console.debug('notaserver', { lastArg });
+                return [...data.servers];
+            }
+            // console.debug('aserver', { lastArg });
+            // return [data.flags(schema)];
+        }
+        if (prelastArg === '--scriptName') {
+            return [...data.scripts];
+        }
+    }
+    // console.log([data.flags(schema)]);
+
+    return [];
+    // return [data.flags(schema)];
 }

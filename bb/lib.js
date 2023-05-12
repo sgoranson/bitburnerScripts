@@ -12,13 +12,15 @@ export const cyan = '\u001b[36m';
 export const red = '\u001b[31m';
 export const reset = '\u001b[0m';
 
+export const logConfig = { debugFlag: false };
+
 export function DBG1(ns, str, termOnly = false) {
-    ns.tprint(`${cyan}DBG: [${(new Date()).toLocaleTimeString()}] ${str}${reset}`);
-    if(!termOnly) {
-        ns.print(`${cyan}DBG: [${(new Date()).toLocaleTimeString()}] ${str}${reset}`);
+    if (!logConfig.debugFlag) return;
+
+    ns.tprint(`${cyan}DBG: [${new Date().toLocaleTimeString()}] ${str}${reset}`);
+    if (!termOnly) {
+        ns.print(`${cyan}DBG: [${new Date().toLocaleTimeString()}] ${str}${reset}`);
     }
-
 }
-
 
 //export function DBG(...args) {console.log(`DBG: [${(new Date()).toLocaleString()}] args: ${args.map(yy => [ Object.keys(yy)[0], Object.values(yy)[0] ] )

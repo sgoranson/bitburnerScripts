@@ -11,7 +11,7 @@ export async function main(ns) {
     }
 
     const TMPFILE = 'tmp.js';
-    let runStr = ` export async function main(ns) {ns.tprint(JSON.stringify(${ns.args.join(' ')},null,"\t")) } `;
+    const runStr = ` export async function main(ns) {ns.tprint(JSON.stringify(${ns.args.join(' ')},null,"\t")) } `;
     ns.write(TMPFILE, runStr, 'w');
     ns.run(TMPFILE);
     //ns.tprint(`${eval(ns.args.join(' '))}`);

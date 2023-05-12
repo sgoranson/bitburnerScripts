@@ -1,6 +1,6 @@
 const schema = [
     ['help', false], //
-    ['targetServer', String],
+    ['targetServer', ''],
 ];
 
 /** @param {import(".").NS} ns  **/
@@ -14,7 +14,12 @@ export async function main(ns) {
     }
 
     ns.tail();
-
+    const startTime = new Date();
+    ns.print(`startTime: ${startTime}`);
+    const multipier = await ns.grow(opts.targetServer);
+    const endTime = new Date();
+    ns.print(`endTime: ${endTime}`);
+    ns.print(`multiplier: ${multipier} elapsedSec: ${(endTime - startTime) / 1000}`);
     //const srv = flags._[0];
 }
 
