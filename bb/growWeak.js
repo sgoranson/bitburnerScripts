@@ -1,5 +1,7 @@
 /* eslint-disable no-await-in-loop */
-import { FNUM, DBG1, red, reset } from '/bb/lib.js';
+import * as ll from '/bb/lib.js';
+
+ll.logConfig.debugFlag = false;
 
 const schema = [
     ['help', false],
@@ -15,10 +17,10 @@ export async function main(ns) {
         return -1;
     }
     console.log('growWeak flags :>> ', flags);
-    const CASH_FRACTION = 0.75;
-    const SEC_OFFSET = 5;
+    const CASH_FRACTION = 0.95;
+    const SEC_OFFSET = 2;
 
-    // ns.tail();
+    ns.tail();
 
     const { targetServer } = flags;
     let cashAvail = ns.getServerMoneyAvailable(targetServer);
@@ -33,22 +35,28 @@ export async function main(ns) {
         cashAvail = ns.getServerMoneyAvailable(targetServer);
         secLvl = ns.getServerSecurityLevel(targetServer);
 
-        DBG1(
+        ll.DBG1(
             ns,
-            `${logPrefix} secLvl: ${FNUM(ns, secLvl)} secMinLvl: ${secMinLvl} cashAvail: ${FNUM(ns, cashAvail)}` +
-                ` cashMax: ${FNUM(ns, cashMax)} earnedCash: ${FNUM(ns, totCash)}`
+            `${logPrefix} secLvl: ${ll.FNUM(ns, secLvl)} secMinLvl: ${secMinLvl} cashAvail: ${ll.FNUM(ns, cashAvail)}` +
+                ` cashMax: ${ll.FNUM(ns, cashMax)} earnedCash: ${ll.FNUM(ns, totCash)}`
         );
 
         if (secLvl > secMinLvl) {
-            DBG1(ns, `${logPrefix} ${red}WEAK${reset}: secLvl: ${FNUM(ns, secLvl)}`);
+            ll.DBG1(ns, `${logPrefix} ${ll.red}WEAK${ll.reset}: secLvl: ${ll.FNUM(ns, secLvl)}`);
             await ns.weaken(targetServer);
         } else if (cashAvail < cashMax) {
-            DBG1(ns, `${logPrefix} ${red}GROW${reset}: cashAvail: ${FNUM(ns, cashAvail)}`);
+            ll.DBG1(ns, `${logPrefix} ${ll.red}GROW${ll.reset}: cashAvail: ${ll.FNUM(ns, cashAvail)}`);
             await ns.grow(targetServer);
         } else {
             const thisCash = await ns.hack(targetServer);
             totCash += thisCash;
-            DBG1(ns, `${logPrefix} ${red}HACK${reset}: thisCash: ${FNUM(ns, thisCash)} totCash: ${FNUM(ns, totCash)}`);
+            ll.DBG1(
+                ns,
+                `${logPrefix} ${ll.red}HACK${ll.reset}: thisCash: ${ll.FNUM(ns, thisCash)} totCash: ${ll.FNUM(
+                    ns,
+                    totCash
+                )}`
+            );
         }
     }
 }

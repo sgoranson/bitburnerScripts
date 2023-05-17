@@ -5,7 +5,6 @@ const Color = {
     reset: '\u001b[0m',
     white: '\u001b[37m',
 };
-
 const schema = [
     ['help', false], //
     ['targetServer', ''],
@@ -28,8 +27,6 @@ export async function main(ns) {
         ns.print(`${Color.cyan} [${new Date().toLocaleTimeString()}] ${Color.white} ${s} sec left ${Color.reset}`);
     };
 
-    // ns.tail();
-
     if (opts.delay) {
         let secLeft = Number.parseInt(opts.delay, 10);
 
@@ -45,12 +42,15 @@ export async function main(ns) {
 
     const startTime = new Date();
     ns.print(`startTime: ${new Date().toLocaleTimeString()}`);
-    const cashHacked = await ns.hack(opts.targetServer); // raises sec by .002
+    const securityLowered = await ns.weaken(opts.targetServer); // lowers sec by .05
     const endTime = new Date();
     ns.print(`INFO: endTime: ${new Date().toLocaleTimeString()}`);
     // const serverObj = ns.getServer(opts.targetServer);
     // ns.print(ll.ppJSON(serverObj));
-    ns.print(`cashHacked: ${cashHacked} elapsedSec: ${(endTime - startTime) / 1000}`);
+    // document.querySelector("#terminal > li:nth-child(496) > div")
+    // document.querySelector("#terminal > li:nth-child(496) > div > span")
+    // <a class="MuiTypography-root MuiTypography-inherit MuiLink-root jss34 MuiLink-underlineAlways css-1q2f0gg"><p class="MuiTypography-root MuiTypography-body1 css-w0c39n">darkweb</p></a>
+    ns.print(`securityLowered: ${securityLowered} elapsedSec: ${(endTime - startTime) / 1000}`);
     //const srv = flags._[0];
 }
 

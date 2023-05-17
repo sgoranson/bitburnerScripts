@@ -1,3 +1,5 @@
+import * as ll from '/bb/lib.js';
+
 const schema = [
     ['help', false], //
     ['targetServer', String],
@@ -7,6 +9,7 @@ const schema = [
 
 export async function main(ns) {
     const opts = ns.flags(schema);
+    console.log('opts :>> ', opts);
 
     if (opts.help || ns.args.length < 2) {
         ns.tprint(`usage: ${ns.getScriptName()} --targetServer SERVERNAME [--help]`);

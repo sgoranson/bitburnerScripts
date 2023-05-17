@@ -18,20 +18,20 @@ export async function main(ns) {
     //ns.tail();
     const myHackLvl = ns.getHackingLevel();
 
-    let jsonServers = [];
-    let visitedServers = new Set();
+    const jsonServers = [];
+    const visitedServers = new Set();
 
     if (!flags.json) {
-        let headerStr = `${Object.keys(ns.getServer('home'))},fullpath`;
+        const headerStr = `${Object.keys(ns.getServer('home'))},fullpath`;
         ns.tprint(`${headerStr} \n `);
         ns.write('servers.txt', `${headerStr} \n `, 'a');
     }
 
-    let V = new Map();
+    const V = new Map();
 
     function scanThis(node) {
         visitedServers.add(node);
-        let ss = ns.getServer(node);
+        const ss = ns.getServer(node);
         ss.path = Array.from(visitedServers).join(':');
 
         ss.connectedServers = ns.scan(node);
@@ -44,11 +44,11 @@ export async function main(ns) {
             jsonServers.push(ss);
         }
 
-        for (const s of ss.connectedServers) {
+        ss.connectedServers.forEach((s) => {
             if (!visitedServers.has(s)) {
                 scanThis(s);
             }
-        }
+        });
     }
 
     scanThis(flags._[0]);
@@ -57,53 +57,49 @@ export async function main(ns) {
     function findPath(startName, targetName) {
         //ns.tprint(`targetName: ${targetName}`);
 
-        let visited = [];
-        let pathQ = [];
+        const visited = [];
+        const pathQ = [];
 
         visited.push(startName);
         pathQ.push([startName]);
 
         while (pathQ.length > 0) {
-            let thisPath = pathQ.shift();
+            const thisPath = pathQ.shift();
 
             if (thisPath[thisPath.length - 1] === targetName) {
                 return thisPath;
             }
 
-            let edges = V.get(thisPath[thisPath.length - 1]);
-            // ns.tprint(
-            //     ` thisPath: ${thisPath.toString().padStart(15)} ` +
-            //         `edges: ${edges.toString().padStart(10)} ` +
-            //         ` visited: ${visited.toString().padStart(20)} pathQ: ${pathQ
-            //             .map((x) => x.join(':'))
-            //             .toString()
-            //             .padStart(20)}`
-            // );
+            const edges = V.get(thisPath[thisPath.length - 1]);
 
-            for (const e of edges) {
+            edges.forEach((e) => {
                 if (!visited.includes(e)) {
-                    let newPath = thisPath.slice();
+                    const newPath = thisPath.slice();
                     newPath.push(e);
                     visited.push(e);
                     pathQ.push(newPath);
                 }
-            }
+            });
         }
 
         return [];
     }
 
     //findPath('sigma-cosmetics');
-    jsonServers.forEach((srv) => (srv.path = findPath('home', srv.hostname)));
-    jsonServers
+    const serversNpaths = jsonServers.map((srv) => ({
+        ...srv,
+        path: findPath('home', srv.hostname),
+    }));
+    serversNpaths
         .filter((s) => s.requiredHackingSkill <= myHackLvl)
         .sort((a, b) => b.moneyMax - a.moneyMax)
         .slice(0, 10)
-        .map(({ hostname, moneyMax, requiredHackingSkill, serverGrowth, path }) => ({
+        .map(({ hostname, moneyMax, requiredHackingSkill, serverGrowth, path, numOpenPortsRequired }) => ({
             hostname: hostname.padStart(15),
             moneyMax: moneyMax.toString().padStart(15),
             requiredHackingSkill: requiredHackingSkill.toString().padStart(5),
             serverGrowth: serverGrowth.toString().padStart(5),
+            numOpenPortsRequired: numOpenPortsRequired.toString().padStart(5),
             // connectedServers: connectedServers.toString().padStart(10),
             path: path.toString().padStart(10),
         }))
