@@ -55,4 +55,93 @@ export function ppJSON(str) {
         .replace(/\b(true|false|null)\b/g, '\x1b[35m$1\x1b[0m');
 }
 
+export function l337(ns, targetServer) {
+    if (!ns.serverExists(targetServer)) {
+        ns.tprint(`ERROR: ${targetServer} no existe`);
+        return;
+    }
+
+    const files = ns.ls('home');
+    if (files.includes('BruteSSH.exe')) {
+        ns.brutessh(targetServer);
+    }
+    if (files.includes('FTPCrack.exe')) {
+        ns.ftpcrack(targetServer);
+    }
+    if (files.includes('HTTPWorm.exe')) {
+        ns.httpworm(targetServer);
+    }
+    if (files.includes('SQLInject.exe')) {
+        ns.sqlinject(targetServer);
+    }
+    if (files.includes('relaySMTP.exe')) {
+        ns.relaysmtp(targetServer);
+    }
+    if (files.includes('NUKE.exe')) {
+        ns.nuke(targetServer);
+    }
+}
+
+export function treeScan(ns) {
+    const root = 'home';
+
+    const jsonServers = [];
+    const visitedServers = new Set();
+
+    const V = new Map();
+
+    function scanThis(node) {
+        visitedServers.add(node);
+        const ss = ns.getServer(node);
+        ss.path = Array.from(visitedServers).join(':');
+
+        ss.connectedServers = ns.scan(node);
+        V.set(node, ss.connectedServers);
+
+        jsonServers.push(ss);
+
+        ss.connectedServers.forEach((s) => {
+            if (!visitedServers.has(s)) {
+                scanThis(s);
+            }
+        });
+    }
+
+    function findPath(startName, targetName) {
+        const visited = [];
+        const pathQ = [];
+
+        visited.push(startName);
+        pathQ.push([startName]);
+
+        while (pathQ.length > 0) {
+            const thisPath = pathQ.shift();
+
+            if (thisPath[thisPath.length - 1] === targetName) {
+                return thisPath;
+            }
+
+            const edges = V.get(thisPath[thisPath.length - 1]);
+
+            edges.forEach((e) => {
+                if (!visited.includes(e)) {
+                    const newPath = thisPath.slice();
+                    newPath.push(e);
+                    visited.push(e);
+                    pathQ.push(newPath);
+                }
+            });
+        }
+
+        return [];
+    }
+
+    scanThis(root);
+
+    return jsonServers.map((srv) => ({
+        ...srv,
+        path: findPath(root, srv.hostname),
+    }));
+}
+
 //export function DBG(...args) {console.log(`DBG: [${(new Date()).toLocaleString()}] args: ${args.map(yy => [ Object.keys(yy)[0], Object.values(yy)[0] ] )

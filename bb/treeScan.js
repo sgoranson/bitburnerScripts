@@ -3,6 +3,7 @@
 const schema = [
     ['help', false],
     ['json', true],
+    ['c', ''],
 ];
 
 /** @param {import(".").NS} ns  **/
@@ -90,20 +91,41 @@ export async function main(ns) {
         ...srv,
         path: findPath('home', srv.hostname),
     }));
-    serversNpaths
-        .filter((s) => s.requiredHackingSkill <= myHackLvl)
-        .sort((a, b) => b.moneyMax - a.moneyMax)
-        .slice(0, 10)
-        .map(({ hostname, moneyMax, requiredHackingSkill, serverGrowth, path, numOpenPortsRequired }) => ({
-            hostname: hostname.padStart(15),
-            moneyMax: moneyMax.toString().padStart(15),
-            requiredHackingSkill: requiredHackingSkill.toString().padStart(5),
-            serverGrowth: serverGrowth.toString().padStart(5),
-            numOpenPortsRequired: numOpenPortsRequired.toString().padStart(5),
-            // connectedServers: connectedServers.toString().padStart(10),
-            path: path.toString().padStart(10),
-        }))
-        .forEach((s) => ns.tprint(s));
+
+    if (flags.c !== '') {
+        const [{ path }] = serversNpaths.filter((s) => s.hostname === flags.c);
+        console.log('path :>> ', path);
+        ns.tprint(path.join(';connect '));
+
+        // eslint-disable-next-line no-eval
+        const doc = eval('document');
+        const terminalInput = doc.getElementById('terminal-input');
+        terminalInput.value = path.join(';connect ');
+
+        // Get a reference to the React event handler.
+        const handler = Object.keys(terminalInput)[1];
+
+        // Perform an onChange event to set some internal values.
+        terminalInput[handler].onChange({ target: terminalInput });
+
+        // Simulate an enter press
+        terminalInput[handler].onKeyDown({ key: 'Enter', preventDefault: () => null });
+    } else {
+        serversNpaths
+            .filter((s) => s.requiredHackingSkill <= myHackLvl)
+            .sort((a, b) => b.moneyMax - a.moneyMax)
+            .slice(0, 10)
+            .map(({ hostname, moneyMax, requiredHackingSkill, serverGrowth, path, numOpenPortsRequired }) => ({
+                hostname: hostname.padStart(15),
+                moneyMax: moneyMax.toString().padStart(15),
+                requiredHackingSkill: requiredHackingSkill.toString().padStart(5),
+                serverGrowth: serverGrowth.toString().padStart(5),
+                numOpenPortsRequired: numOpenPortsRequired.toString().padStart(5),
+                // connectedServers: connectedServers.toString().padStart(10),
+                path: path.join(';connect ').padStart(10),
+            }))
+            .forEach((s) => ns.tprint(s));
+    }
 }
 
 // eslint-disable-next-line no-unused-vars

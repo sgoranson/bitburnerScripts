@@ -2,7 +2,6 @@ import * as ll from '/bb/lib.js';
 
 const schema = [
     ['help', false], //
-    ['targetServer'],
 ];
 
 /** @param {import(".").NS} ns  **/
@@ -14,12 +13,11 @@ export async function main(ns) {
     console.log('opts :>> ', opts);
 
     if (opts.help || ns.args.length < 2) {
-        ns.tprint(`usage: ${ns.getScriptName()} --targetServer SERVERNAME [--help]`);
+        ns.tprint(`usage: ${ns.getScriptName()} SERVERNAME script [--help]`);
         return;
     }
 
-    ns.tail();
-
+    ns.exec(ns.args[1], ns.args[0]);
     //const srv = flags._[0];
 }
 

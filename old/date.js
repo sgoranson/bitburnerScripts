@@ -9,17 +9,19 @@ const schema = [
 
 export async function main(ns) {
     const opts = ns.flags(schema);
-
-    ll.logConfig.ns = ns;
     console.log('opts :>> ', opts);
 
-    if (opts.help || ns.args.length < 2) {
+    if (opts.help) {
         ns.tprint(`usage: ${ns.getScriptName()} --targetServer SERVERNAME [--help]`);
         return;
     }
 
-    ns.tail();
-
+    const dd = new Date();
+    const dd2 = new Date();
+    dd.setSeconds(dd.getSeconds() + 60);
+    ns.tprint(
+        `${ll.Color.cyan} [${dd2.toLocaleTimeString()}] ${ll.Color.white} ${dd.toLocaleTimeString()} ${ll.Color.reset}`
+    );
     //const srv = flags._[0];
 }
 

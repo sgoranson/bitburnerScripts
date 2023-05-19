@@ -16,7 +16,7 @@ module.exports = {
                 endOfLine: 'auto',
             },
         ],
-        indent: ['error', 4],
+        indent: ['error', 4, { SwitchCase: 1 }],
         quotes: ['error', 'single'],
         semi: ['error', 'always'],
         'no-constant-condition': ['error', { checkLoops: false }],
@@ -27,3 +27,5 @@ module.exports = {
         'import/no-absolute-path': 'off',
     },
 };
+
+// npm i eslint-config-prettier eslint-plugin-prettier eslint-config-airbnb-base prettier
