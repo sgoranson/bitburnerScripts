@@ -1,4 +1,0 @@
-omega-net
-silver-helix 
-max-hardware
-earl2

@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+    //   "allowJs": true,
+//      "checkJs": true,
+      "moduleResolution": "nodenext",
+        "module": "ES6",
+        "target": "es2022",
+    }
+  }

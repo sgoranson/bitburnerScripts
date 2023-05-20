@@ -1,3 +1,4 @@
+// @ts-ignore
 import * as ll from '/bb/lib.js';
 
 const schema = [
@@ -5,13 +6,14 @@ const schema = [
     ['sploit', false],
     ['list', false],
     ['batch', false],
-    ['runServer'],
+    ['runServer', false],
     ['tail', false],
 ];
 
-/** @param {import(".").NS} ns  **/
+/** @param {import("./bb").NS} ns  **/
 
 export async function main(ns) {
+    // @ts-ignore
     const opts = ns.flags(schema);
     ll.logConfig.ns = ns;
     console.log('opts :>> ', opts);
@@ -53,19 +55,12 @@ export async function main(ns) {
                 ns.tprint(s);
             });
     } else if (opts.batch) {
-        switch (o) {
-            case 3:
-                break;
-            case 4:
-                break;
-            default:
-                break;
-        }
         const maxThreads = ll.calcScriptMaxThreads({ scriptName: '/bb/grow.js', serverName: opts.runServer });
         const maxThreadsPerBatch = Math.round(maxThreads / ezServers.length);
         ezServers.forEach((s) => {
             ns.exec(
                 '/bb/batch.js',
+                // @ts-ignore
                 opts.runServer,
                 1,
                 '--targetServer',

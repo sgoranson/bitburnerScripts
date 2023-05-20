@@ -12,7 +12,7 @@ const schema = [
     ['cores', 1],
 ];
 
-/** @param {import(".").NS} ns  **/
+/** @param {import("./bb").NS} ns  **/
 
 export async function main(ns) {
     const opts = ns.flags(schema);

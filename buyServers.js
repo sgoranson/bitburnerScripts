@@ -9,7 +9,7 @@ const schema = [
     ['list', false],
 ];
 
-/** @param {import(".").NS} ns  **/
+/** @param {import("./bb").NS} ns  **/
 export async function main(ns) {
     const opts = ns.flags(schema);
     if (opts.help || !opts.targetServer) {

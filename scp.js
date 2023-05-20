@@ -1,11 +1,10 @@
 /* eslint-disable require-jsdoc */
-'use strict';
 
 import * as ll from '/bb/lib.js';
 
 const SERVERFN = '/bb/srv1.txt';
 
-/** @param {import(".").NS} ns  **/
+/** @param {import("./bb").NS} ns  **/
 
 export async function main(ns) {
     const flags = ns.flags([['help', false]]);
@@ -14,7 +13,6 @@ export async function main(ns) {
         return;
     }
 
-
     const destServers = readLines(ns, SERVERFN);
     //const destServers = ['earl2', 'omega-net'];
     const files2copy = flags._.length ? flags._ : ns.ls(ns.getHostname(), '/bb');
@@ -22,7 +20,7 @@ export async function main(ns) {
     ll.INFO(ns, `INFO: copying: ${files2copy}`);
     ll.INFO(ns, `to: ${destServers.join(':')}`);
 
-    for (let server of destServers) {
+    for (const server of destServers) {
         ll.INFO(ns, `scp to (${server})`);
         ll.INFO(ns, `dest: (${server}) sz: ${server.length}`);
         if (ns.scp(files2copy, server, 'home')) {
@@ -33,10 +31,10 @@ export async function main(ns) {
     }
 }
 
-/** @param {import(".").NS} ns  **/
+/** @param {import("./bb").NS} ns  **/
 function readLines(ns, filename) {
-    let fullStr = ns.read(filename);
-    let strz = fullStr
+    const fullStr = ns.read(filename);
+    const strz = fullStr
         .split('\n')
         .map((x) => x.trim())
         .filter((x) => x.length > 0);
