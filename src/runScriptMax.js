@@ -1,4 +1,4 @@
-import * as ll from '/bb/lib.js';
+import * as ll from './lib.js';
 
 ll.logConfig.debugFlag = false;
 
@@ -9,7 +9,7 @@ const schema = [
     ['threadCount'],
 ];
 
-/** @param {import(".").NS} ns  **/
+/** @param {import("../bb").NS} ns  **/
 
 export async function main(ns) {
     const opts = ns.flags(schema);
@@ -21,14 +21,15 @@ export async function main(ns) {
     const noquoteArgs = opts._.map((str) => str.replaceAll("'", ''));
     console.log('noquoteArgs :>> ', noquoteArgs);
 
-    if (opts.help || ns.args.length < 6) {
+    if (opts.help) {
         ns.tprint(
             `usage: ${ns.getScriptName()} \\'--literal argString\\' [--serverName SRCSERVER] [--scriptName SCRIPTNAME] [--threadCount x]  [--help] `
         );
         return;
     }
 
-    const maxThreads = ll.calcScriptMaxThreads({ scriptName: opts.scriptName, serverName: opts.serverName });
+    const exeStr = opts.scriptName.replace('./', '');
+    const maxThreads = ll.calcScriptMaxThreads({ scriptName: exeStr, serverName: opts.serverName });
     if (maxThreads === 0) {
         throw new Error('no RAM! exiting.');
     }

@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop */
-import * as ll from '/bb/lib.js';
+import * as ll from './lib.js';
 
 const schema = [
     ['help', false], //
@@ -12,25 +12,23 @@ const schema = [
     ['cores', 1],
 ];
 
-/** @param {import("./bb").NS} ns  **/
+/** @param {import(".").NS} ns  **/
 
 export async function main(ns) {
     const opts = ns.flags(schema);
     ll.logConfig.ns = ns;
 
-    console.log('opts :>> ', opts);
-
-    if (opts.help || opts.targetServer === '' || ns.args.length < 1) {
+    if (opts.help) {
         ns.tprint(
-            `usage: ${ns.getScriptName()} [--multiplier x.x] [--runServer x] [--runBatch bool] [--threadCount x] [--targetServer x] [--moneyTarget x] [--cores x] [--help]`
+            `usage: ${ns.getScriptName()}  hostname [--multiplier x.x] [--runServer x] [--runBatch bool] [--threadCount x] [--targetServer x] [--moneyTarget x] [--cores x] [--help]`
         );
         return;
     }
 
     //ns.tail();
     let info = {};
-    const serverObj = ns.getServer(opts.targetServer);
-    const cores = ns.getServer(opts.runServer).cpuCores;
+    const serverObj = ns.getServer(ns.args[0]);
+    const cores = ns.getServer(ns.getHostname()).cpuCores;
 
     const weakenSecurityDownUnit = ns.weakenAnalyze(1, cores);
     // const secThreadGuess = sec2lower / secLoweredForXWthreads;
@@ -48,8 +46,8 @@ export async function main(ns) {
     if (serverObj.moneyAvailable < 0.95 * serverObj.moneyMax) {
         ns.tprint('WARN: ', 'low money, growing...');
         const growMult = serverObj.moneyMax / serverObj.moneyAvailable; // (moneyAvail)(mult) = moneyMax :
-        const growThreads = ns.growthAnalyze(opts.targetServer, growMult, cores);
-        const growSecurityUp = ns.growthAnalyzeSecurity(growThreads, opts.targetServer, cores);
+        const growThreads = ns.growthAnalyze(ns.args[0], growMult, cores);
+        const growSecurityUp = ns.growthAnalyzeSecurity(growThreads, ns.args[0], cores);
         const weakenGrowThreads = growSecurityUp / weakenSecurityDownUnit;
         const weakenGrowSecurityDown = ns.weakenAnalyze(weakenGrowThreads, cores);
         // skipHack = true;
@@ -58,42 +56,42 @@ export async function main(ns) {
     ns.tprint('INFO: ', 'server prepped, continuing...');
     let money2hack;
     if (opts.threadCount) {
-        const oneThreadHackCash = ns.hackAnalyze(opts.targetServer) * serverObj.moneyAvailable;
+        const oneThreadHackCash = ns.hackAnalyze(ns.args[0]) * serverObj.moneyAvailable;
         money2hack = Number(opts.threadCount) * oneThreadHackCash;
     } else {
         money2hack = opts.moneyTarget ?? serverObj.moneyAvailable;
     }
-    const hackThreads = ns.hackAnalyzeThreads(opts.targetServer, money2hack);
-    const hackSecurityUp = ns.hackAnalyzeSecurity(hackThreads, opts.targetServer);
+    const hackThreads = ns.hackAnalyzeThreads(ns.args[0], money2hack);
+    const hackSecurityUp = ns.hackAnalyzeSecurity(hackThreads, ns.args[0]);
 
     const weakenHackThreads = hackSecurityUp / weakenSecurityDownUnit;
     const weakenHackSecurityDown = ns.weakenAnalyze(weakenHackThreads, cores);
     const growMult = serverObj.moneyMax / (serverObj.moneyAvailable - money2hack || 1);
     ns.tprint('INFO gg:', serverObj.moneyMax, ' ', serverObj.moneyAvailable, ' ', money2hack, ' ', growMult);
     // const growMult = serverObj.moneyMax / 1; // (1)(mult) = moneyMax : because we should have $1 after a hack
-    const growThreads = ns.growthAnalyze(opts.targetServer, growMult, cores);
+    const growThreads = ns.growthAnalyze(ns.args[0], growMult, cores);
     const growSecurityUp = ns.growthAnalyzeSecurity(growThreads, undefined, cores);
 
     const weakenGrowThreads = growSecurityUp / weakenSecurityDownUnit;
     const weakenGrowSecurityDown = ns.weakenAnalyze(weakenGrowThreads, cores);
 
-    const hackChance = ns.hackAnalyzeChance(opts.targetServer);
+    const hackChance = ns.hackAnalyzeChance(ns.args[0]);
     const totalThreads = hackThreads + growThreads + weakenHackThreads + weakenGrowThreads;
     const cashPerThread = money2hack / totalThreads;
 
     const niceNum = (s) => Math.round(Number(s) / 1000);
 
-    const hackTimeSec = niceNum(ns.getHackTime(opts.targetServer));
-    const growTimeSec = niceNum(ns.getGrowTime(opts.targetServer));
-    const weakenTimeSec = niceNum(ns.getWeakenTime(opts.targetServer));
+    const hackTimeSec = niceNum(ns.getHackTime(ns.args[0]));
+    const growTimeSec = niceNum(ns.getGrowTime(ns.args[0]));
+    const weakenTimeSec = niceNum(ns.getWeakenTime(ns.args[0]));
     const hackTimeMin = hackTimeSec / 60;
     const growTimeMin = growTimeSec / 60;
     const weakenTimeMin = weakenTimeSec / 60;
     const cashPerSec = money2hack / hackTimeSec;
 
-    const hackMax = ll.calcScriptMaxThreads({ scriptName: '/bb/hack.js', serverName: opts.runServer });
-    const growMax = ll.calcScriptMaxThreads({ scriptName: '/bb/grow.js', serverName: opts.runServer });
-    const weakMax = ll.calcScriptMaxThreads({ scriptName: '/bb/weak.js', serverName: opts.runServer });
+    const hackMax = ll.calcScriptMaxThreads({ scriptName: 'hack.js', serverName: opts.runServer ?? 'home' });
+    const growMax = ll.calcScriptMaxThreads({ scriptName: 'grow.js', serverName: opts.runServer ?? 'home' });
+    const weakMax = ll.calcScriptMaxThreads({ scriptName: 'weak.js', serverName: opts.runServer ?? 'home' });
     info = {
         cores,
         money2hack: ll.FMTN(money2hack),

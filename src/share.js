@@ -1,23 +1,25 @@
-import * as ll from '/bb/lib.js';
+import * as ll from './lib.js';
 
 const schema = [
     ['help', false], //
 ];
 
-/** @param {import(".").NS} ns  **/
+/** @param {import("./bb").NS} ns  **/
 
 export async function main(ns) {
     const opts = ns.flags(schema);
 
     ll.logConfig.ns = ns;
-    console.log('opts :>> ', opts);
 
-    if (opts.help || ns.args.length < 2) {
-        ns.tprint(`usage: ${ns.getScriptName()} SERVERNAME script [--help]`);
+    if (opts.help) {
+        ns.tprint(`usage: ${ns.getScriptName()} - [--help]`);
         return;
     }
 
-    ns.exec(ns.args[1], ns.args[0]);
+    while (true) {
+        // eslint-disable-next-line no-await-in-loop
+        await ns.share();
+    }
     //const srv = flags._[0];
 }
 

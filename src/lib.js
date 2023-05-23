@@ -1,5 +1,4 @@
 /* eslint-disable no-useless-escape */
-/** @param {import(".").NS} ns  **/
 
 export const logConfig = { debugFlag: false, ns: undefined };
 
@@ -46,7 +45,11 @@ export function DBG1(ns, str, termOnly = false) {
 export const FMTN = Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format;
 
 export function ppJSON(str) {
-    return JSON.stringify(str, null, 2) // obj is the object you want to stringify
+    const prettyStr =
+        typeof str === 'number'
+            ? Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(str)
+            : str;
+    return JSON.stringify(prettyStr, null, 2) // obj is the object you want to stringify
         .replace(/\\n/g, '\n')
         .replace(/\\r/g, '\r')
         .replace(/\\t/g, '\t')
@@ -82,6 +85,13 @@ export function l337(ns, targetServer) {
     }
 }
 
+/**
+ * BFS net scan
+ *
+ * @export
+ * @param {import(".").NS} ns
+ * @returns {Server[]}
+ */
 export function treeScan(ns) {
     const root = 'home';
 

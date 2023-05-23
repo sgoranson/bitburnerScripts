@@ -1,10 +1,22 @@
+/* eslint-disable no-restricted-syntax */
 /* eslint-disable require-jsdoc */
 
-import * as ll from '/bb/lib.js';
+import * as ll from './lib.js';
 
-const SERVERFN = '/bb/srv1.txt';
+const SERVERFN = 'srv1.txt';
 
-/** @param {import("./bb").NS} ns  **/
+/** @param {import(".").NS} ns  **/
+function readLines(ns, filename) {
+    const fullStr = ns.read(filename);
+    const strz = fullStr
+        .split('\n')
+        .map((x) => x.trim())
+        .filter((x) => x.length > 0);
+    ll.INFO(ns, `fullStr: ${fullStr} strz: ${strz}`);
+
+    return strz;
+}
+/** @param {import(".").NS} ns  **/
 
 export async function main(ns) {
     const flags = ns.flags([['help', false]]);
@@ -15,7 +27,7 @@ export async function main(ns) {
 
     const destServers = readLines(ns, SERVERFN);
     //const destServers = ['earl2', 'omega-net'];
-    const files2copy = flags._.length ? flags._ : ns.ls(ns.getHostname(), '/bb');
+    const files2copy = flags._.length ? flags._ : ns.ls(ns.getHostname(), '.js');
 
     ll.INFO(ns, `INFO: copying: ${files2copy}`);
     ll.INFO(ns, `to: ${destServers.join(':')}`);
@@ -31,17 +43,6 @@ export async function main(ns) {
     }
 }
 
-/** @param {import("./bb").NS} ns  **/
-function readLines(ns, filename) {
-    const fullStr = ns.read(filename);
-    const strz = fullStr
-        .split('\n')
-        .map((x) => x.trim())
-        .filter((x) => x.length > 0);
-    ll.INFO(ns, `fullStr: ${fullStr} strz: ${strz}`);
-
-    return strz;
-}
 // eslint-disable-next-line no-unused-vars
 export function autocomplete(data, _) {
     return [...data.scripts, 'xx'];

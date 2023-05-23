@@ -1,10 +1,10 @@
 /* eslint-disable no-await-in-loop */
-import * as ll from '/bb/lib.js';
+import * as ll from './lib.js';
 
 const schema = [
     ['help', false], //
     ['targetServer'],
-    ['runServer'],
+    ['runServer', ''],
     ['maxThreads'],
     ['t', false],
 ];
@@ -96,12 +96,12 @@ export async function main(ns) {
     ll.logConfig.ns = ns;
     console.log('opts :>> ', opts);
 
-    if (opts.help || !opts.targetServer || !opts.runServer) {
-        ns.tprint(
-            `usage: ${ns.getScriptName()} --targetServer SERVERNAME --runServer SERVERNAME --maxThreads x [--help]`
-        );
+    if (opts.help || !opts.targetServer) {
+        ns.tprint(`usage: ${ns.getScriptName()} --targetServer SERVERNAME --maxThreads x [--help]`);
         return;
     }
+
+    const runServer = ns.getHostname();
 
     const niceNum = (s) => Math.round(Number(s) / 1000);
 
@@ -113,7 +113,7 @@ export async function main(ns) {
     if (opts.maxThreads) {
         growMax = Number(opts.maxThreads);
     } else {
-        growMax = ll.calcScriptMaxThreads({ scriptName: '/bb/grow.js', serverName: opts.runServer });
+        growMax = ll.calcScriptMaxThreads({ scriptName: 'grow.js', serverName: runServer });
     }
 
     const b1t0 = new Batch({ weakTime: weakenTimeSec, growTime: growTimeSec, hackTime: hackTimeSec });
@@ -128,13 +128,27 @@ export async function main(ns) {
 
     const adjustedThreadMax = growMax / batches.length;
 
-    const weak1Threads = Math.round(adjustedThreadMax * 0.02);
-    const weak2Threads = Math.round(adjustedThreadMax * 0.04);
-    const batchHackThreads = Math.round(adjustedThreadMax * 0.45);
-    const batchGrowThreads = Math.round(adjustedThreadMax * 0.44);
+    const weak1Threads = Math.max(Math.round(adjustedThreadMax * 0.02), 1);
+    const weak2Threads = Math.max(Math.round(adjustedThreadMax * 0.04), 1);
+    const batchHackThreads = Math.max(Math.round(adjustedThreadMax * 0.45), 1);
+    const batchGrowThreads = Math.max(Math.round(adjustedThreadMax * 0.44), 1);
 
     const execf = (exepath, threads, delay) => {
-        ns.exec(exepath, opts.runServer, threads, '--targetServer', opts.targetServer, '--delay', delay);
+        const dd = new Date();
+        dd.setSeconds(dd.getSeconds() + delay + growTimeSec);
+        ns.exec(
+            exepath,
+            runServer,
+            threads,
+            '--targetServer',
+            opts.targetServer,
+            '--delay',
+            delay,
+            '--threads',
+            threads,
+            '--ending',
+            dd.toLocaleTimeString()
+        );
     };
 
     while (true) {
@@ -156,12 +170,11 @@ export async function main(ns) {
             // execf('/bb/grow.js', almostMaxThreads, 0);
             skipHack = true;
         }
-
         batches.forEach((p) => {
-            execf('/bb/weak.js', weak1Threads, p.se.weak1S);
-            execf('/bb/weak.js', weak2Threads, p.se.weak2S);
-            if (!skipHack) execf('/bb/hack.js', batchHackThreads, p.se.hackS);
-            execf('/bb/grow.js', batchGrowThreads, p.se.growS);
+            execf('weak.js', weak1Threads, p.se.weak1S);
+            execf('weak.js', weak2Threads, p.se.weak2S);
+            if (!skipHack) execf('hack.js', batchHackThreads, p.se.hackS);
+            execf('grow.js', batchGrowThreads, p.se.growS);
         });
 
         await ns.sleep(5000);
@@ -169,11 +182,11 @@ export async function main(ns) {
         while (true) {
             if (
                 !ns
-                    .ps(opts.runServer)
+                    .ps(runServer)
                     .filter(({ args }) => args.includes(opts.targetServer))
                     .some((x) => /(weak|hack|grow)/.test(x.filename))
             ) {
-                ns.print(`INFO: no batch scripts running on ${opts.runServer}, all done`);
+                ns.print(`INFO: no batch scripts running on ${runServer}, all done`);
                 break;
             } else {
                 await ns.sleep(5000);

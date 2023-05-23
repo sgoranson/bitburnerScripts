@@ -5,10 +5,12 @@ const Color = {
     reset: '\u001b[0m',
     white: '\u001b[37m',
 };
-
 const schema = [
     ['help', false], //
     ['targetServer', ''],
+    ['threads', 1],
+    ['started', ''],
+    ['ending', ''],
     ['delay'],
 ];
 
@@ -16,8 +18,6 @@ const schema = [
 
 export async function main(ns) {
     const opts = ns.flags(schema);
-
-    console.log('opts :>> ', opts);
 
     if (opts.help || ns.args.length < 2) {
         ns.tprint(`usage: ${ns.getScriptName()} --targetServer SERVERNAME [--delay SEC] [--help]`);
@@ -45,12 +45,19 @@ export async function main(ns) {
 
     const startTime = new Date();
     ns.print(`startTime: ${new Date().toLocaleTimeString()}`);
-    const cashHacked = await ns.hack(opts.targetServer); // raises sec by .002
+    let multi;
+    // eslint-disable-next-line no-await-in-loop
+    try {
+        multi = await ns.grow(opts.targetServer);
+    } catch (error) {
+        ns.print(`ERROR: ${String(error)}`);
+    }
     const endTime = new Date();
     ns.print(`INFO: endTime: ${new Date().toLocaleTimeString()}`);
     // const serverObj = ns.getServer(opts.targetServer);
     // ns.print(ll.ppJSON(serverObj));
-    ns.print(`cashHacked: ${cashHacked} elapsedSec: ${(endTime - startTime) / 1000}`);
+    ns.print(`multiplier: ${multi} elapsedSec: ${(endTime - startTime) / 1000}`);
+    // eslint-disable-next-line no-await-in-loop
     //const srv = flags._[0];
 }
 
