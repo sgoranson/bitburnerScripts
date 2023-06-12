@@ -2,7 +2,6 @@ import * as ll from './lib.js';
 
 const schema = [
     ['help', false], //
-    ['targetServer'],
 ];
 
 /** @param {import(".").NS} ns  **/
@@ -14,6 +13,8 @@ export async function main(ns) {
 
     if (opts.help) {
         ns.tprint(`usage: ${ns.getScriptName()}  [--help]`);
+        // eslint-disable-next-line no-useless-return
+        return;
     }
 
     //const srv = flags._[0];

@@ -25,7 +25,7 @@ export async function main(ns) {
         return;
     }
 
-    const destServers = readLines(ns, SERVERFN);
+    const destServers = readLines(ns, SERVERFN).filter((s) => ns.serverExists(s));
     //const destServers = ['earl2', 'omega-net'];
     const files2copy = flags._.length ? flags._ : ns.ls(ns.getHostname(), '.js');
 

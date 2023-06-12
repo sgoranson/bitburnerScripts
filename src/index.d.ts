@@ -170,6 +170,29 @@ interface Multipliers {
 }
 
 /** @public */
+interface TailProperties {
+  /** X-coordinate of the log window */
+  x: number;
+  /** Y-coordinate of the log window */
+  y: number;
+  /** Width of the log window content area */
+  width: number;
+  /** Height of the log window content area */
+  height: number;
+}
+
+/**
+ * @public
+ * A stand-in for the real React.ReactElement, which API-extractor doesn't know about.
+ * Don't try to create one of these by hand; use React.createElement().
+ */
+interface ReactElement {
+  type: string | ((props: any) => ReactElement | null) | (new (props: any) => object);
+  props: any;
+  key: string | number | null;
+}
+
+/** @public */
 interface RunningScript {
   /** Arguments the script was called with */
   args: (string | number | boolean)[];
@@ -198,6 +221,15 @@ interface RunningScript {
   ramUsage: number;
   /** Hostname of the server on which this script runs */
   server: string;
+  /** Properties of the tail window, or null if it is not shown */
+  tailProperties: TailProperties | null;
+  /**
+   * The title, as shown in the script's log box. Defaults to the name + args,
+   * but can be changed by the user. If it is set to a React element (only by
+   * the user), that will not be persisted, and will be restored to default on
+   * load.
+   */
+  title: string | ReactElement;
   /** Number of threads that this script runs with */
   threads: number;
   /** Whether this RunningScript is excluded from saves */
@@ -294,7 +326,7 @@ interface BasicHGWOptions {
   /** Set to true this action will affect the stock market. */
   stock?: boolean;
   /** Number of additional milliseconds that will be spent waiting between the start of the function and when it
-   * completes. Experimental in 2.2.2, may be removed in 2.3. */
+   * completes. */
   additionalMsec?: number;
 }
 
@@ -310,13 +342,13 @@ interface AugmentPair {
 }
 
 /** @public */
-declare enum PositionTypes {
+declare enum PositionType {
   Long = "L",
   Short = "S",
 }
 
 /** @public */
-declare enum OrderTypes {
+declare enum OrderType {
   LimitBuy = "Limit Buy Order",
   LimitSell = "Limit Sell Order",
   StopBuy = "Stop Buy Order",
@@ -333,9 +365,9 @@ interface StockOrderObject {
   /** Price per share */
   price: number;
   /** Order type */
-  type: OrderTypes;
+  type: OrderType;
   /** Order position */
-  position: PositionTypes;
+  position: PositionType;
 }
 
 /**
@@ -2405,10 +2437,10 @@ export interface Hacknet {
    * Returns false otherwise.
    *
    * @param index - Index/Identifier of Hacknet Node.
-   * @param n - Number of levels to purchase. Must be positive. Rounded to nearest integer.
+   * @param n - Number of levels to purchase. Must be positive. Rounded to nearest integer. Defaults to 1 if not specified.
    * @returns True if the Hacknet Node’s level is successfully upgraded, false otherwise.
    */
-  upgradeLevel(index: number, n: number): boolean;
+  upgradeLevel(index: number, n?: number): boolean;
 
   /**
    * Upgrade the RAM of a hacknet node.
@@ -2425,10 +2457,10 @@ export interface Hacknet {
    * Returns false otherwise.
    *
    * @param index - Index/Identifier of Hacknet Node.
-   * @param n - Number of times to upgrade RAM. Must be positive. Rounded to nearest integer.
+   * @param n - Number of times to upgrade RAM. Must be positive. Rounded to nearest integer. Defaults to 1 if not specified.
    * @returns True if the Hacknet Node’s RAM is successfully upgraded, false otherwise.
    */
-  upgradeRam(index: number, n: number): boolean;
+  upgradeRam(index: number, n?: number): boolean;
 
   /**
    * Upgrade the core of a hacknet node.
@@ -2443,10 +2475,10 @@ export interface Hacknet {
    * Returns false otherwise.
    *
    * @param index - Index/Identifier of Hacknet Node.
-   * @param n - Number of cores to purchase. Must be positive. Rounded to nearest integer.
+   * @param n - Number of cores to purchase. Must be positive. Rounded to nearest integer. Defaults to 1 if not specified.
    * @returns True if the Hacknet Node’s cores are successfully purchased, false otherwise.
    */
-  upgradeCore(index: number, n: number): boolean;
+  upgradeCore(index: number, n?: number): boolean;
 
   /**
    * Upgrade the cache of a hacknet node.
@@ -2463,10 +2495,10 @@ export interface Hacknet {
    * Returns false otherwise.
    *
    * @param index - Index/Identifier of Hacknet Node.
-   * @param n - Number of cache levels to purchase. Must be positive. Rounded to nearest integer.
+   * @param n - Number of cache levels to purchase. Must be positive. Rounded to nearest integer. Defaults to 1 if not specified.
    * @returns True if the Hacknet Node’s cache level is successfully upgraded, false otherwise.
    */
-  upgradeCache(index: number, n: number): boolean;
+  upgradeCache(index: number, n?: number): boolean;
 
   /**
    * Calculate the cost of upgrading hacknet node levels.
@@ -2479,10 +2511,10 @@ export interface Hacknet {
    * If the specified Hacknet Node is already at max level, then Infinity is returned.
    *
    * @param index - Index/Identifier of Hacknet Node.
-   * @param n - Number of levels to upgrade. Must be positive. Rounded to nearest integer.
+   * @param n - Number of levels to upgrade. Must be positive. Rounded to nearest integer. Defaults to 1 if not specified.
    * @returns Cost of upgrading the specified Hacknet Node.
    */
-  getLevelUpgradeCost(index: number, n: number): number;
+  getLevelUpgradeCost(index: number, n?: number): number;
 
   /**
    * Calculate the cost of upgrading hacknet node RAM.
@@ -2495,10 +2527,10 @@ export interface Hacknet {
    * If the specified Hacknet Node already has max RAM, then Infinity is returned.
    *
    * @param index - Index/Identifier of Hacknet Node.
-   * @param n - Number of times to upgrade RAM. Must be positive. Rounded to nearest integer.
+   * @param n - Number of times to upgrade RAM. Must be positive. Rounded to nearest integer. Defaults to 1 if not specified.
    * @returns Cost of upgrading the specified Hacknet Node's RAM.
    */
-  getRamUpgradeCost(index: number, n: number): number;
+  getRamUpgradeCost(index: number, n?: number): number;
 
   /**
    * Calculate the cost of upgrading hacknet node cores.
@@ -2511,10 +2543,10 @@ export interface Hacknet {
    * If the specified Hacknet Node is already at max level, then Infinity is returned.
    *
    * @param index - Index/Identifier of Hacknet Node.
-   * @param n - Number of times to upgrade cores. Must be positive. Rounded to nearest integer.
+   * @param n - Number of times to upgrade cores. Must be positive. Rounded to nearest integer. Defaults to 1 if not specified.
    * @returns Cost of upgrading the specified Hacknet Node's number of cores.
    */
-  getCoreUpgradeCost(index: number, n: number): number;
+  getCoreUpgradeCost(index: number, n?: number): number;
 
   /**
    * Calculate the cost of upgrading hacknet node cache.
@@ -2529,10 +2561,10 @@ export interface Hacknet {
    * If the specified Hacknet Node is already at max level, then Infinity is returned.
    *
    * @param index - Index/Identifier of Hacknet Node.
-   * @param n - Number of times to upgrade cache. Must be positive. Rounded to nearest integer.
+   * @param n - Number of times to upgrade cache. Must be positive. Rounded to nearest integer. Defaults to 1 if not specified.
    * @returns Cost of upgrading the specified Hacknet Node's cache.
    */
-  getCacheUpgradeCost(index: number, n: number): number;
+  getCacheUpgradeCost(index: number, n?: number): number;
 
   /**
    * Get the total number of hashes stored.
@@ -5104,6 +5136,29 @@ export interface NS {
   closeTail(pid?: number): void;
 
   /**
+   * Set the title of the tail window of a script.
+   * @remarks
+   * RAM cost: 0 GB
+   *
+   * This sets the title to the given string, and also forces an update of the
+   * tail window's contents.
+   *
+   * The title is saved across restarts, but only if it is a simple string.
+   *
+   * If the pid is unspecified, it will modify the current script’s logs.
+   *
+   * Otherwise, the pid argument can be used to change the logs from another script.
+   *
+   * It is possible to pass a React Element instead of a string. Get these by calling
+   * React.createElement() with appropriate parameters. You should either know
+   * or be willing to learn about the React UI library if you go down this
+   * route, and there will likely be rough edges.
+   *
+   * @param pid - Optional. PID of the script having its tail closed. If omitted, the current script is used.
+   */
+  setTitle(title: string | ReactElement, pid?: number): void;
+
+  /**
    * Get the list of servers connected to a server.
    * @remarks
    * RAM cost: 0.2 GB
@@ -5281,7 +5336,7 @@ export interface NS {
    * RAM cost: 1.3 GB
    *
    * Run a script as a separate process on a specified server. This is similar to the function {@link NS.run | run}
-   * except that it can be used to run a script on any server, instead of just the current server.
+   * except that it can be used to run a script that already exists on any server, instead of just the current server.
    *
    * If the script was successfully started, then this function returns the PID of that script.
    * Otherwise, it returns 0.
@@ -5307,7 +5362,7 @@ export interface NS {
    * // arguments to the script.
    * ns.exec("foo.js", "foodnstuff", 5, 1, "test");
    * ```
-   * @param script - Filename of script to execute.
+   * @param script - Filename of script to execute. This file must already exist on the target server.
    * @param hostname - Hostname of the `target server` on which to execute the script.
    * @param threadOrOptions - Either an integer number of threads for new script, or a {@link RunOptions} object. Threads defaults to 1.
    * @param args - Additional arguments to pass into the new script that is being run. Note that if any arguments are being passed into the new script, then the third argument threadOrOptions must be filled in with a value.
@@ -5695,12 +5750,9 @@ export interface NS {
    * RAM cost: 0.1 GB
    *
    * Returns a boolean indicating whether the specified file exists on the target server.
-   * The filename for scripts is case-sensitive, but for other types of files it is not.
+   * The filename for programs is case insensitive, other file types are case sensitive.
    * For example, fileExists(“brutessh.exe”) will work fine, even though the actual program
    * is named 'BruteSSH.exe'.
-   *
-   * If the hostname/ip argument is omitted, then the function will search through the current
-   * server (the server running the script that calls this function) for the file.
    *
    * * @example
    * ```js
@@ -5711,7 +5763,7 @@ export interface NS {
    * ns.fileExists("ftpcrack.exe");
    * ```
    * @param filename - Filename of file to check.
-   * @param host - Host of target server. This is optional. If it is not specified then the function will use the current server as the target server.
+   * @param host - Host of target server. Optional, defaults to the server the script is running on.
    * @returns True if specified file exists, and false otherwise.
    */
   fileExists(filename: string, host?: string): boolean;
@@ -6511,6 +6563,16 @@ export interface NS {
   getResetInfo(): ResetInfo;
 
   /**
+   * Get the ram cost of a netscript function.
+   *
+   * @remarks
+   * RAM cost: 0 GB
+   *
+   * @param name - The fully-qualified function name, without the leading `ns`. Example inputs: `hack`, `tprint`, `stock.getPosition`.
+   */
+  getFunctionRamCost(name: string): number;
+
+  /**
    * Parse command line flags.
    * @remarks
    * RAM cost: 0 GB
@@ -6684,6 +6746,9 @@ type CorpIndustryName =
   | "Software"
   | "Healthcare"
   | "Real Estate";
+
+/** @public */
+type CorpSmartSupplyOption = "leftovers" | "imports" | "none";
 
 /** Names of all cities
  * @public */
@@ -6940,7 +7005,7 @@ export interface WarehouseAPI {
     divisionName: string,
     city: CityName | `${CityName}`,
     materialName: string,
-    option: string,
+    option: CorpSmartSupplyOption,
   ): void;
   /**
    * Set material buy data
@@ -6958,21 +7023,19 @@ export interface WarehouseAPI {
    * @param amt - Amount of material to buy
    */
   bulkPurchase(divisionName: string, city: CityName | `${CityName}`, materialName: string, amt: number): void;
-  /**
-   * Get warehouse data
+
+  /** Get warehouse data
    * @param divisionName - Name of the division
    * @param city - Name of the city
-   * @returns warehouse data
-   */
+   * @returns warehouse data */
   getWarehouse(divisionName: string, city: CityName | `${CityName}`): Warehouse;
-  /**
-   * Get product data
+
+  /** Get product data
    * @param divisionName - Name of the division
    * @param city - Name of the city
    * @param productName - Name of the product
-   * @returns product data
-   */
-  getProduct(divisionName: string, city: CityName | `${CityName}`, productName: string): Product;
+   * @returns product data */
+  getProduct(divisionName: string, cityName: CityName | `${CityName}`, productName: string): Product;
   /**
    * Get material data
    * @param divisionName - Name of the division
@@ -6997,22 +7060,18 @@ export interface WarehouseAPI {
    * @param on - market ta enabled
    */
   setMaterialMarketTA2(divisionName: string, city: CityName | `${CityName}`, materialName: string, on: boolean): void;
-  /**
-   * Set market TA 1 for a product.
+
+  /** * Set market TA 1 for a product.
    * @param divisionName - Name of the division
-   * @param city - Name of the city
    * @param productName - Name of the product
-   * @param on - market ta enabled
-   */
-  setProductMarketTA1(divisionName: string, city: CityName | `${CityName}`, productName: string, on: boolean): void;
-  /**
-   * Set market TA 2 for a product.
+   * @param on - market ta enabled */
+  setProductMarketTA1(divisionName: string, productName: string, on: boolean): void;
+
+  /** Set market TA 2 for a product.
    * @param divisionName - Name of the division
-   * @param city - Name of the city
    * @param productName - Name of the product
-   * @param on - market ta enabled
-   */
-  setProductMarketTA2(divisionName: string, city: CityName | `${CityName}`, productName: string, on: boolean): void;
+   * @param on - market ta enabled */
+  setProductMarketTA2(divisionName: string, productName: string, on: boolean): void;
   /**
    * Set material export data
    * @param sourceDivision - Source division
@@ -7028,7 +7087,7 @@ export interface WarehouseAPI {
     targetDivision: string,
     targetCity: CityName | `${CityName}`,
     materialName: string,
-    amt: number,
+    amt: number | string,
   ): void;
   /**
    * Cancel material export
@@ -7037,7 +7096,6 @@ export interface WarehouseAPI {
    * @param targetDivision - Target division
    * @param targetCity - Target city
    * @param materialName - Name of the material
-   * @param amt - Amount of material to export.
    */
   cancelExportMaterial(
     sourceDivision: string,
@@ -7045,7 +7103,6 @@ export interface WarehouseAPI {
     targetDivision: string,
     targetCity: CityName | `${CityName}`,
     materialName: string,
-    amt: number,
   ): void;
   /**
    * Purchase warehouse for a new city
@@ -7129,12 +7186,12 @@ export interface Corporation extends WarehouseAPI, OfficeAPI {
   /** Check if you have a one time unlockable upgrade
    * @param upgradeName - Name of the upgrade
    * @returns true if unlocked and false if not */
-  hasUnlockUpgrade(upgradeName: string): boolean;
+  hasUnlock(upgradeName: string): boolean;
 
   /** Gets the cost to unlock a one time unlockable upgrade
    * @param upgradeName - Name of the upgrade
    * @returns cost of the upgrade */
-  getUnlockUpgradeCost(upgradeName: string): number;
+  getUnlockCost(upgradeName: string): number;
 
   /** Get the level of a levelable upgrade
    * @param upgradeName - Name of the upgrade
@@ -7198,7 +7255,7 @@ export interface Corporation extends WarehouseAPI, OfficeAPI {
 
   /** Unlock an upgrade
    * @param upgradeName - Name of the upgrade */
-  unlockUpgrade(upgradeName: string): void;
+  purchaseUnlock(upgradeName: string): void;
 
   /** Level an upgrade.
    * @param upgradeName - Name of the upgrade */
@@ -7315,6 +7372,8 @@ interface CorporationInfo {
 interface CorpConstants {
   /** Names of all corporation game states */
   stateNames: CorpStateName[];
+  /** Names of all employee positions */
+  employeePositions: CorpEmployeePosition[];
   /** Names of all industries */
   industryNames: CorpIndustryName[];
   /** Names of all materials */
@@ -7358,6 +7417,7 @@ interface CorpConstants {
   maxProductsBase: number;
   /** The minimum decay value for morale/energy */
   minEmployeeDecay: number;
+  smartSupplyOptions: CorpSmartSupplyOption[];
 }
 /** @public */
 type CorpStateName = "START" | "PURCHASE" | "PRODUCTION" | "EXPORT" | "SALE";
@@ -7408,7 +7468,6 @@ type CorpResearchName =
   | "AutoBrew"
   | "AutoPartyManager"
   | "Automatic Drug Administration"
-  | "Bulk Purchasing"
   | "CPH4 Injections"
   | "Drones"
   | "Drones - Assembly"
@@ -7416,7 +7475,6 @@ type CorpResearchName =
   | "Go-Juice"
   | "HRBuddy-Recruitment"
   | "HRBuddy-Training"
-  | "JoyWire"
   | "Market-TA.I"
   | "Market-TA.II"
   | "Overclock"
@@ -7454,7 +7512,7 @@ interface CorpMaterialConstantData {
 interface IndustryData {
   /** Industry type */
   type: CorpIndustryName;
-  /** Cost to expand to the division */
+  /** Cost to make a new division of this industry type */
   cost: number;
   /** Materials required for production and their amounts */
   requiredMaterials: Record<string, number>;
@@ -7476,28 +7534,35 @@ interface Product {
   /** Name of the product */
   name: string;
   /** Demand for the product, only present if "Market Research - Demand" unlocked */
-  dmd: number | undefined;
+  demand: number | undefined;
   /** Competition for the product, only present if "Market Research - Competition" unlocked */
-  cmp: number | undefined;
-  /** Product Rating */
-  rat: number;
-  /** Effective rating  */
-  effRat: number;
-  /** Product Properties. The data is \{qlt, per, dur, rel, aes, fea\} */
-  properties: { [key: string]: number };
+  competition: number | undefined;
+  /** Rating based on stats */
+  rating: number;
+  /** Effective rating in the specific city */
+  effectiveRating: number;
+  /** Product stats */
+  stats: {
+    quality: number;
+    performance: number;
+    durability: number;
+    reliability: number;
+    aesthetics: number;
+    features: number;
+  };
   /** Production cost */
-  pCost: number;
-  /** Sell cost, can be "MP+5" */
-  sCost: string;
-  /** Sell amount, can be "PROD/2" */
-  sAmt: string;
-  /** Amount of product  */
-  qty: number;
-  /** Amount of product produced  */
-  prod: number;
-  /** Amount of product sold */
-  sell: number;
-  /** Creation progress - A number between 0-100 representing percentage */
+  productionCost: number;
+  /** Desired sell price, can be "MP+5" */
+  desiredSellPrice: string | number;
+  /** Desired sell amount, e.g. "PROD/2" */
+  desiredSellAmount: string | number;
+  /** Amount of product stored in warehouse*/
+  stored: number;
+  /** Amount of product produced last cycle */
+  productionAmount: number;
+  /** Amount of product sold last cycle */
+  actualSellAmount: number;
+  /** A number between 0-100 representing percentage completion */
   developmentProgress: number;
 }
 
@@ -7509,25 +7574,25 @@ interface Material {
   /** Name of the material */
   name: CorpMaterialName;
   /** Amount of material  */
-  qty: number;
+  stored: number;
   /** Quality of the material */
-  qlt: number;
+  quality: number;
   /** Demand for the material, only present if "Market Research - Demand" unlocked */
-  dmd: number | undefined;
+  demand: number | undefined;
   /** Competition for the material, only present if "Market Research - Competition" unlocked */
-  cmp: number | undefined;
-  /** Amount of material produced  */
-  prod: number;
-  /** Amount of material sold */
-  sell: number;
+  competition: number | undefined;
+  /** Amount of material produced last cycle */
+  productionAmount: number;
+  /** Amount of material sold last cycle */
+  actualSellAmount: number;
   /** Cost to buy material */
-  cost: number;
+  marketPrice: number;
   /** Sell cost, can be "MP+5" */
-  sCost: string | number;
+  desiredSellPrice: string | number;
   /** Sell amount, can be "PROD/2" */
-  sAmt: string | number;
+  desiredSellAmount: string | number;
   /** Export orders */
-  exp: Export[];
+  exports: Export[];
 }
 
 /**
@@ -7536,11 +7601,11 @@ interface Material {
  */
 interface Export {
   /** Division the material is being exported to */
-  div: string;
+  division: string;
   /** City the material is being exported to */
-  loc: CityName;
+  city: CityName;
   /** Amount of material exported */
-  amt: string;
+  amount: string;
 }
 
 /**
@@ -7551,7 +7616,7 @@ interface Warehouse {
   /** Amount of size upgrade bought */
   level: number;
   /** City in which the warehouse is located */
-  loc: CityName;
+  city: CityName;
   /** Total space in the warehouse */
   size: number;
   /** Used space in the warehouse */
@@ -7566,23 +7631,23 @@ interface Warehouse {
  */
 export interface Office {
   /** City of the office */
-  loc: CityName;
+  city: CityName;
   /** Maximum number of employee */
   size: number;
   /** Maximum amount of energy of the employees */
-  maxEne: number;
+  maxEnergy: number;
   /** Maximum morale of the employees */
-  maxMor: number;
+  maxMorale: number;
   /** Amount of employees */
-  employees: number;
+  numEmployees: number;
   /** Average energy of the employees */
-  avgEne: number;
+  avgEnergy: number;
   /** Average morale of the employees */
-  avgMor: number;
+  avgMorale: number;
   /** Total experience of all employees */
   totalExperience: number;
   /** Production of the employees */
-  employeeProd: Record<CorpEmployeePosition, number>;
+  employeeProductionByJob: Record<CorpEmployeePosition, number>;
   /** Positions of the employees */
   employeeJobs: Record<CorpEmployeePosition, number>;
 }
@@ -7601,9 +7666,9 @@ interface Division {
   /** Popularity of the division */
   popularity: number;
   /** Production multiplier */
-  prodMult: number;
+  productionMult: number;
   /** Amount of research in that division */
-  research: number;
+  researchPoints: number;
   /** Revenue last cycle */
   lastCycleRevenue: number;
   /** Expenses last cycle */
@@ -7612,14 +7677,16 @@ interface Division {
   thisCycleRevenue: number;
   /** Expenses this cycle */
   thisCycleExpenses: number;
-  /** All research bought */
-  upgrades: number[];
+  /** Number of times AdVert has been bought */
+  numAdVerts: number;
   /** Cities in which this division has expanded */
   cities: CityName[];
-  /** Products developed by this division */
+  /** Names of Products developed by this division */
   products: string[];
   /** Whether the industry this division is in is capable of making products */
   makesProducts: boolean;
+  /** How many products this division can support */
+  maxProducts: number;
 }
 
 /**

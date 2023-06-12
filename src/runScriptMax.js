@@ -15,8 +15,6 @@ export async function main(ns) {
     const opts = ns.flags(schema);
     ll.logConfig.ns = ns;
 
-    console.log('opts :>> ', opts);
-
     // eslint-disable-next-line quotes
     const noquoteArgs = opts._.map((str) => str.replaceAll("'", ''));
     console.log('noquoteArgs :>> ', noquoteArgs);

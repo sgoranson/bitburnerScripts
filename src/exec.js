@@ -6,45 +6,45 @@ export async function main(ns) {
     ll.logConfig.ns = ns;
 
     if (ns.args.includes('--help') || ns.args.length < 2) {
-        ns.tprint(`usage: ${ns.getScriptName()} SERVERNAME script threads [...args] [--farm] [--kill] [--help]`);
+        ns.tprint(`usage: ${ns.getScriptName()} SERVERNAME script [...args]`);
         return;
     }
 
-    let farm = false;
-    let kill = false;
-    if (ns.args.includes('--farm')) {
-        ns.args.splice(ns.args.indexOf('--farm'), 1);
-        farm = true;
-    }
-    if (ns.args.includes('--kill')) {
-        ns.args.splice(ns.args.indexOf('--kill'), 1);
-        kill = true;
-    }
+    // let farm = false;
+    // let kill = false;
+    // if (ns.args.includes('--farm')) {
+    //     ns.args.splice(ns.args.indexOf('--farm'), 1);
+    //     farm = true;
+    // }
+    // if (ns.args.includes('--kill')) {
+    //     ns.args.splice(ns.args.indexOf('--kill'), 1);
+    //     kill = true;
+    // }
     // eslint-disable-next-line prefer-const
-    let [serverName, scriptName, threads, prefix, args] = ns.args;
-    args ??= [];
+    let [serverName, scriptName, args] = ns.args;
 
     scriptName = scriptName.replace('./', '');
 
-    if (farm) {
-        // [...Array(25)].forEach((s, i) => {
-        [...Array(25)]
-            .map((s, i) => `${prefix}${i}`)
-            .filter((s) => ns.serverExists(s))
-            .forEach((s) => {
-                try {
-                    if (kill) {
-                        ns.killall(s);
-                    } else {
-                        ns.exec(scriptName, s, threads, ...args);
-                    }
-                } catch (error) {
-                    ns.tprint(`ERROR: ${String(error)}`);
-                }
-            });
-    } else {
-        ns.exec(scriptName, serverName, threads, ...args);
-    }
+    // if (farm) {
+    //     // [...Array(25)].forEach((s, i) => {
+    //     [...Array(25)]
+    //         .map((s, i) => `${prefix}${i}`)
+    //         .filter((s) => ns.serverExists(s))
+    //         .forEach((s) => {
+    //             try {
+    //                 if (kill) {
+    //                     ns.killall(s);
+    //                 } else {
+    //                     ns.exec(scriptName, s, threads, ...args);
+    //                 }
+    //             } catch (error) {
+    //                 ns.tprint(`ERROR: ${String(error)}`);
+    //             }
+    //         });
+    // } else {
+    if (args) ns.exec(scriptName, serverName, 1, args);
+    else ns.exec(scriptName, serverName, 1);
+    // }
 
     ns.tprint(ns.getScriptLogs().join('\n'));
     //const srv = flags._[0];

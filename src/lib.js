@@ -44,18 +44,31 @@ export function DBG1(ns, str, termOnly = false) {
 }
 export const FMTN = Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format;
 
-export function ppJSON(str) {
-    const prettyStr =
-        typeof str === 'number'
-            ? Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(str)
-            : str;
+export function ppColor(prettyStr) {
     return JSON.stringify(prettyStr, null, 2) // obj is the object you want to stringify
         .replace(/\\n/g, '\n')
         .replace(/\\r/g, '\r')
         .replace(/\\t/g, '\t')
+        .replace(/(-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, FMTN)
         .replace(/(-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, '\x1b[33m$1\x1b[0m')
         .replace(/"([^"]+)":/g, '\x1b[36m"$1"\x1b[0m:')
         .replace(/\b(true|false|null)\b/g, '\x1b[35m$1\x1b[0m');
+}
+
+export const ppRow = (obj) => {
+    let str = '{ ';
+    for (const [k, v] of Object.entries(obj)) {
+        const vStr = typeof v === 'number' ? FMTN(v) : String(v);
+
+        str += `${k} : ${vStr.padEnd(6)}, `;
+    }
+    str += '} ';
+    return ppColor(str);
+};
+
+export function ppJSON(str) {
+    const prettyStr = typeof str === 'number' ? FMTN(str) : str;
+    return ppColor(prettyStr);
 }
 
 export function l337(ns, targetServer) {
@@ -87,7 +100,7 @@ export function l337(ns, targetServer) {
 
 /**
  * BFS net scan
- *
+ * @typedef {import(".").Server} Server
  * @export
  * @param {import(".").NS} ns
  * @returns {Server[]}
